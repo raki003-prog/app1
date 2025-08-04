@@ -1,0 +1,24 @@
+{
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "default",
+                "enableSsl": "Disabled"
+            },
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 3306,
+            "driver": "MySQL",
+            "name": "testingapp",
+            "database": "database.db",
+            "username": "sample"
+        },
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "name": "testing1",
+            "database": "database"
+        }
+    ],
+    "sqltools.useNodeRuntime": true
+}
