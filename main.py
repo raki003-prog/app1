@@ -11,23 +11,23 @@ def home():
 def get_all_customers():
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT DISTINCT customer_id FROM table1")
+    cursor.execute("SELECT DISTINCT user_id FROM table1")
     rows = cursor.fetchall()
     conn.close()
-    customers = [dict(row) for row in rows]
+    customers = [row[0] for row in rows]
     return {"customers": customers}
 
-@app.get("/customers/{customer_id}")
-def get_customer(customer_id: int):
+@app.get("/customers/{user_id}")
+def get_customer(user_id: int):
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM table1 WHERE customer_id = ?", (customer_id,))
+    cursor.execute("SELECT * FROM table1 WHERE user_id = ?", (user_id,))
     rows = cursor.fetchall()
     conn.close()
 
     if not rows:
         raise HTTPException(status_code=404, detail="Customer not found")
 
-    customer = dict(rows[0])
-    customer["order_count"] = len(rows)
-    return customer
+    first_order = dict(zip([col[0] for col in cursor.description], rows[0]))
+    first_order["order_count"] = len(rows)
+    return first_order
