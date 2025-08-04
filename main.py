@@ -1,24 +1,33 @@
-import pandas as pd
-import sqlite3
-import os
+from fastapi import FastAPI, HTTPException
+from database import get_connection
 
-# File paths
-file1_path = os.path.join("data", "orders.csv")
-file2_path = os.path.join("data", "users.csv")
+app = FastAPI()
 
-# Read CSVs
-df1 = pd.read_csv(file1_path)
-df2 = pd.read_csv(file2_path)
+@app.get("/")
+def home():
+    return {"message": "Customer API is working"}
 
-# Create DB connection (this will create 'database.db' if it doesn't exist)
-conn = sqlite3.connect("database.db")
+@app.get("/customers")
+def get_all_customers():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT DISTINCT customer_id FROM table1")
+    rows = cursor.fetchall()
+    conn.close()
+    customers = [dict(row) for row in rows]
+    return {"customers": customers}
 
-# Write to SQLite tables
-df1.to_sql("table1", conn, if_exists="replace", index=False)
-df2.to_sql("table2", conn, if_exists="replace", index=False)
+@app.get("/customers/{customer_id}")
+def get_customer(customer_id: int):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM table1 WHERE customer_id = ?", (customer_id,))
+    rows = cursor.fetchall()
+    conn.close()
 
-# Confirm tables
-print("Tables created:")
-print(conn.execute("SELECT name FROM sqlite_master WHERE type='table';").fetchall())
+    if not rows:
+        raise HTTPException(status_code=404, detail="Customer not found")
 
-conn.close()
+    customer = dict(rows[0])
+    customer["order_count"] = len(rows)
+    return customer
